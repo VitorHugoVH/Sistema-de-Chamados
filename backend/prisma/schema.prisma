@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // usada pela API (pooler do Supabase, porta 6543)
+  directUrl = env("DIRECT_URL") // usada pelas migrations (conexão de sessão, porta 5432)
 }
 
 enum TicketStatus {
