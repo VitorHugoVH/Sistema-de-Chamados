@@ -105,8 +105,8 @@ User 1 ──── N Ticket N ──── 1 Category
 Pré-requisitos: **Node.js 20+** e um projeto no **Supabase**, ou um PostgreSQL 14+ local.
 
 ```bash
-git clone https://github.com/VitorHugoVH/Projeto-de-Avalia-o.git
-cd Projeto-de-Avalia-o/backend
+git clone https://github.com/VitorHugoVH/Sistema-de-Chamados.git
+cd Sistema-de-Chamados/backend
 npm install
 ```
 
