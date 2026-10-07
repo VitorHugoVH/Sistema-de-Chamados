@@ -1,5 +1,5 @@
 import { prisma } from "../config/db";
-import { NotFoundError } from "../utils/AppError";
+import { ErroNaoEncontrado } from "../utils/erros";
 
 // Campos públicos do usuário: passwordHash NUNCA é selecionado
 export const publicUserSelect = {
@@ -17,7 +17,7 @@ export async function findUserById(id: number) {
   });
 
   if (!user) {
-    throw new NotFoundError("Usuário não encontrado");
+    throw new ErroNaoEncontrado("Usuário não encontrado");
   }
 
   return user;

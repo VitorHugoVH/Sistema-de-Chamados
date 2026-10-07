@@ -1,17 +1,17 @@
 import bcrypt from "bcrypt";
 import { prisma } from "../config/db";
 import { generateToken } from "../utils/jwt";
-import { ConflictError, UnauthorizedError } from "../utils/AppError";
-import { LoginInput, RegisterInput } from "../validators/auth.validator";
+import { ErroConflito, ErroNaoAutorizado } from "../utils/erros";
+import { LoginInput, RegistrarInput } from "../schemas/auth.schema";
 import { publicUserSelect } from "./user.service";
 
 const SALT_ROUNDS = 10;
 
-export async function register({ name, email, password }: RegisterInput) {
+export async function register({ name, email, password }: RegistrarInput) {
   // Regra: não permitir email duplicado
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
-    throw new ConflictError("Email já cadastrado");
+    throw new ErroConflito("Email já cadastrado");
   }
 
   // A senha nunca é salva em texto puro, apenas o hash
@@ -29,7 +29,7 @@ export async function login({ email, password }: LoginInput) {
   // Mesma mensagem para email ou senha errados: não revela quais emails existem
   const passwordMatches = user ? await bcrypt.compare(password, user.passwordHash) : false;
   if (!user || !passwordMatches) {
-    throw new UnauthorizedError("Email ou senha inválidos");
+    throw new ErroNaoAutorizado("Email ou senha inválidos");
   }
 
   return {

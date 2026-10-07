@@ -1,6 +1,6 @@
 import { prisma } from "../config/db";
-import { NotFoundError } from "../utils/AppError";
-import { CreateTicketInput, UpdateTicketInput } from "../validators/ticket.validator";
+import { ErroNaoEncontrado, ErroValidacao } from "../utils/erros";
+import { AtualizarTicketInput, CriarTicketInput } from "../schemas/ticket.schema";
 
 // Dados relacionados retornados junto com cada chamado
 const ticketInclude = {
@@ -12,7 +12,7 @@ const ticketInclude = {
 async function ensureCategoryExists(categoryId: number) {
   const category = await prisma.category.findUnique({ where: { id: categoryId } });
   if (!category) {
-    throw new NotFoundError("Categoria não encontrada");
+    throw new ErroValidacao([`categoryId ${categoryId} não corresponde a nenhuma categoria existente`]);
   }
 }
 
@@ -25,7 +25,7 @@ export async function findTicketById(id: number, userId: number) {
   });
 
   if (!ticket) {
-    throw new NotFoundError("Chamado não encontrado");
+    throw new ErroNaoEncontrado("Chamado não encontrado");
   }
 
   return ticket;
@@ -40,7 +40,7 @@ export async function listTickets(userId: number) {
 }
 
 // O userId vem do JWT (req.user), nunca do corpo da requisição
-export async function createTicket(data: CreateTicketInput, userId: number) {
+export async function createTicket(data: CriarTicketInput, userId: number) {
   await ensureCategoryExists(data.categoryId);
 
   return prisma.ticket.create({
@@ -49,7 +49,7 @@ export async function createTicket(data: CreateTicketInput, userId: number) {
   });
 }
 
-export async function updateTicket(id: number, data: UpdateTicketInput, userId: number) {
+export async function updateTicket(id: number, data: AtualizarTicketInput, userId: number) {
   await findTicketById(id, userId); // não permite atualizar chamado inexistente
 
   if (data.categoryId !== undefined) {

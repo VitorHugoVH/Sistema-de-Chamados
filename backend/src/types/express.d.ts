@@ -1,11 +1,12 @@
 import { AuthUser } from "./auth";
 
-// Adiciona a propriedade "user" ao Request do Express.
-// Ela é preenchida pelo middleware de autenticação.
 declare global {
   namespace Express {
     interface Request {
+      // Usuário autenticado — preenchido pelo middleware de autenticação
       user?: AuthUser;
+      // Dados já validados pelo Zod — preenchidos pelo middleware validar
+      validated: { body?: any; params?: any; query?: any };
     }
   }
 }

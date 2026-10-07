@@ -48,7 +48,7 @@ describe("POST /auth/register", () => {
       .send({ name: "M", email: "email-invalido", password: "123" });
 
     expect(response.status).toBe(400);
-    const fields = response.body.details.map((detail: { field: string }) => detail.field);
+    const fields = response.body.detalhes.map((detalhe: string) => detalhe.split(":")[0]);
     expect(fields).toEqual(["name", "email", "password"]);
   });
 });

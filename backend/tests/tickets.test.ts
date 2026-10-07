@@ -57,12 +57,12 @@ describe("POST /tickets", () => {
     expect(data.userId).toBe(user.id);
   });
 
-  it("retorna 404 quando a categoria não existe", async () => {
+  it("retorna 400 quando a categoria não existe", async () => {
     prismaMock.category.findUnique.mockResolvedValue(null);
 
     const response = await request(app).post("/tickets").set(auth).send(validTicket);
 
-    expect(response.status).toBe(404);
+    expect(response.status).toBe(400);
     expect(prismaMock.ticket.create).not.toHaveBeenCalled();
   });
 
@@ -73,7 +73,7 @@ describe("POST /tickets", () => {
       .send({ ...validTicket, priority: "URGENTE" });
 
     expect(response.status).toBe(400);
-    expect(response.body.details[0].field).toBe("priority");
+    expect(response.body.detalhes[0]).toMatch(/^priority:/);
   });
 });
 
