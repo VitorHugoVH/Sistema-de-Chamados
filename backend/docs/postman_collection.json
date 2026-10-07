@@ -588,7 +588,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
-                  "pm.test(\"Lista os campos inválidos\", () => pm.expect(pm.response.json().details).to.have.length(3));"
+                  "pm.test(\"Lista os campos inválidos\", () => pm.expect(pm.response.json().detalhes).to.have.length(3));"
                 ]
               }
             }
@@ -725,14 +725,14 @@
           }
         },
         {
-          "name": "Categoria inexistente (404)",
+          "name": "Categoria inexistente (400)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
                 ]
               }
             }

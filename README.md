@@ -19,7 +19,7 @@ Usuários se cadastram, fazem login (JWT) e abrem chamados classificados por cat
 | jsonwebtoken (JWT) | Autenticação |
 | cors | Controle de quais origens podem chamar a API |
 | dotenv | Variáveis de ambiente |
-| Vitest + Supertest | Testes automatizados |
+| Jest + Supertest | Testes automatizados |
 
 ## Arquitetura
 
@@ -29,48 +29,72 @@ A API é organizada em camadas, cada uma com uma responsabilidade:
 Requisição HTTP
    │
    ▼
-Routes        → define o endpoint e os middlewares (autenticação, validação)
+Routes        → declara o endpoint e aplica os middlewares (autenticar, validar)
    │
    ▼
-Controllers   → lê a requisição, chama o service e devolve a resposta HTTP
+validar (Zod) → valida body, params e query antes do controller
    │
    ▼
-Services      → regras de negócio (ex.: email duplicado, categoria existente)
+Controllers   → lê os dados já validados, chama o service e devolve a resposta HTTP
    │
    ▼
-Prisma        → acesso ao banco
+Services      → regras de negócio (ex.: email duplicado, categoria existente). Não conhece req/res nem o Prisma
    │
    ▼
-PostgreSQL (Supabase)
+Repositories  → único lugar que conhece o Prisma: só consultas ao banco
+   │
+   ▼
+Prisma → PostgreSQL (Supabase)
 ```
 
-Erros lançados em qualquer camada chegam ao **middleware global de erros** (`errorHandler`). Ele converte cada erro no status HTTP adequado. Como o Express 5 já encaminha os erros de funções `async` para esse middleware, não é preciso espalhar `try/catch` pelo código.
+Erros lançados em qualquer camada chegam ao **middleware global de erros** (`errorHandler`), que converte cada erro no status HTTP adequado. Como o Express 5 já encaminha os erros de funções `async` para esse middleware, não é preciso espalhar `try/catch` pelos controllers.
 
 ### Estrutura de pastas
 
 ```
 backend/
 ├── prisma/
-│   ├── migrations/            # Histórico de migrations do banco
-│   ├── schema.prisma          # Modelos, enums e relacionamentos
-│   └── seed.ts                # Categorias iniciais
+│   ├── migrations/              # Histórico de migrations do banco
+│   ├── schema.prisma            # Modelos, enums e relacionamentos
+│   └── seed.ts                  # Categorias iniciais
 ├── src/
-│   ├── controllers/           # Camada HTTP (req → service → res)
-│   ├── services/              # Regras de negócio + Prisma
-│   ├── routes/                # Definição dos endpoints
-│   ├── middlewares/           # auth, validate, errorHandler, notFound
-│   ├── validators/            # Schemas do Zod
-│   ├── lib/                   # env, prisma (instância única), jwt
-│   ├── utils/                 # AppError, parseId
-│   ├── types/                 # Tipos (ex.: req.user)
-│   ├── app.ts                 # Configuração do Express (CORS, JSON, rotas, erros)
-│   └── server.ts              # Inicialização do servidor
-├── tests/                     # Testes automatizados
+│   ├── routes/                  # Declara as rotas, aplica autenticar/validar e aponta para o controller
+│   │   ├── index.ts             # Agrega os roteadores de cada recurso
+│   │   ├── auth.routes.ts
+│   │   ├── users.routes.ts
+│   │   ├── categories.routes.ts
+│   │   └── tickets.routes.ts
+│   ├── schemas/                 # Schemas Zod: formato de body e params de cada rota
+│   │   ├── common.ts            # idParamsSchema e formatação das mensagens de erro
+│   │   ├── auth.schema.ts
+│   │   ├── category.schema.ts
+│   │   └── ticket.schema.ts
+│   ├── controllers/             # Lê req.validated, chama o service, formata a resposta HTTP
+│   ├── services/                # Regras de negócio
+│   ├── repositories/            # Acesso ao banco com Prisma
+│   ├── middlewares/
+│   │   ├── autenticar.ts        # Exige "Authorization: Bearer TOKEN"
+│   │   ├── validar.ts           # Valida com Zod e lança ErroValidacao (400)
+│   │   ├── errorHandler.ts      # Tratamento de erros centralizado (inclusive erros do Prisma)
+│   │   └── notFound.ts          # 404 para rotas inexistentes
+│   ├── utils/
+│   │   ├── erros.ts             # ErroValidacao (400), ErroNaoAutorizado (401), ErroNaoEncontrado (404), ErroConflito (409)
+│   │   └── jwt.ts               # gerarToken e verificarToken
+│   ├── config/
+│   │   ├── db.ts                # Instância única do Prisma Client
+│   │   └── env.ts               # Leitura e validação das variáveis de ambiente
+│   ├── types/                   # Tipos do TypeScript (req.user, req.validated)
+│   ├── app.ts                   # Monta o Express: CORS, JSON, rotas, notFound e errorHandler
+│   └── server.ts                # Ponto de entrada: sobe o servidor HTTP
+├── tests/                       # Testes automatizados, separados por camada
 ├── docs/postman_collection.json
 ├── .env.example
+├── jest.config.js
 ├── package.json
 └── tsconfig.json
 ```
+
+Cada recurso segue o mesmo caminho. Por exemplo, para chamados: `routes/tickets.routes.ts` → `schemas/ticket.schema.ts` → `controllers/tickets.controller.ts` → `services/tickets.service.ts` → `repositories/tickets.repository.ts`. As funções seguem os mesmos nomes em todas as camadas: `listar`, `buscarPorId`, `criar`, `atualizar` e `remover`.
 
 ### Entidades e relacionamentos
 
@@ -95,6 +119,7 @@ User 1 ──── N Ticket N ──── 1 Category
 - Cada usuário só visualiza, altera e exclui **os próprios chamados**. Chamados de outros usuários respondem `404`.
 - O chamado precisa pertencer a uma **categoria existente**, tanto na criação quanto na atualização.
 - Todo chamado nasce com status `OPEN`. O status é alterado depois, via `PUT`.
+- Não é permitido criar chamado com **categoria inexistente** (`400`).
 - Não é permitido cadastrar **email duplicado** nem **categoria com nome duplicado** (`409`).
 - Não é permitido atualizar ou excluir chamado inexistente (`404`).
 - A senha é armazenada apenas como hash (bcrypt) e o `passwordHash` **nunca** é retornado pela API.
@@ -103,9 +128,10 @@ User 1 ──── N Ticket N ──── 1 Category
 
 - **Dono do chamado vem do token, não do corpo.** O `userId` é lido do JWT pelo middleware de autenticação. Assim, um usuário não consegue abrir chamados em nome de outro, mesmo enviando um `userId` na requisição.
 - **Cada usuário só acessa os próprios chamados.** As consultas filtram por `id` **e** `userId`. Um chamado de outro usuário responde `404`, sem revelar que ele existe.
-- **Erros centralizados com `AppError`.** Os services lançam erros com o status HTTP (`NotFoundError`, `ConflictError`...) e um único middleware monta a resposta. Os controllers ficam curtos e não precisam de `try/catch`.
-- **Validação antes da regra de negócio.** O middleware `validateBody` aplica o schema do Zod antes do controller. O service já recebe dados válidos, e campos que não estão no schema (como `userId`) são descartados.
-- **Enums do Prisma reaproveitados no Zod.** `status` e `priority` são validados com os mesmos enums do banco (`z.nativeEnum`), então a validação e o banco nunca divergem.
+- **Camada de repositories.** Só os repositories conhecem o Prisma. Os services ficam com as regras de negócio e podem ser testados com repositories falsos, sem banco.
+- **Erros centralizados.** Os services lançam erros com o status HTTP (`ErroValidacao`, `ErroNaoEncontrado`, `ErroConflito`...) e um único middleware monta a resposta. Os controllers ficam curtos e não precisam de `try/catch`.
+- **Validação antes da regra de negócio.** O middleware `validar` aplica o schema do Zod antes do controller, e os dados convertidos ficam em `req.validated`. O service já recebe dados válidos, e campos que não estão no schema (como `userId`) são descartados.
+- **Enums do Prisma reaproveitados no Zod.** `status` e `priority` são validados com os mesmos enums do banco (`z.enum`), então a validação e o banco nunca divergem.
 - **IDs numéricos.** IDs autoincrementais (`/tickets/1`) são mais fáceis de usar na demonstração do que UUIDs.
 - **RLS no Supabase.** Ativar o Row Level Security bloqueia o acesso às tabelas pela API pública do Supabase. Os dados só podem ser acessados pela nossa API.
 
@@ -143,7 +169,7 @@ Para gerar um `JWT_SECRET` aleatório:
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-As variáveis são validadas na inicialização (`src/lib/env.ts`). Se faltar alguma obrigatória, a API não sobe e informa qual está faltando. O arquivo `.env` está no `.gitignore` e **não deve ser commitado**.
+As variáveis são validadas na inicialização (`src/config/env.ts`). Se faltar alguma obrigatória, a API não sobe e informa qual está faltando. O arquivo `.env` está no `.gitignore` e **não deve ser commitado**.
 
 ## Banco de dados
 
@@ -205,13 +231,24 @@ npm run build   # compila o TypeScript para dist/
 npm start       # executa dist/server.js
 ```
 
-Testes:
+## Testes
 
 ```bash
-npm test
+npm test               # roda todos os testes
+npm run test:coverage  # mostra a cobertura de código
 ```
 
-Os testes usam um mock do Prisma, então **não precisam de banco de dados**.
+Os testes usam **Jest + Supertest** e ficam em `tests/`, separados por camada:
+
+| Pasta | O que testa |
+| --- | --- |
+| `tests/schemas/` | Schemas Zod: dados válidos e inválidos |
+| `tests/services/` | Regras de negócio, com os repositories mockados |
+| `tests/repositories/` | Consultas enviadas ao Prisma (ex.: filtro pelo dono do chamado) |
+| `tests/middlewares/` | errorHandler: status e formato de cada tipo de erro |
+| `tests/routes/` | Requisições HTTP completas: cadastro, login, proteção por JWT e chamados |
+
+O Prisma é substituído por um mock em `tests/jest.setup.ts`, então os testes **não precisam de banco de dados**.
 
 ## Endpoints
 
@@ -281,17 +318,17 @@ Resposta:
 Todos os erros seguem o mesmo formato:
 
 ```json
-{ "error": "Chamado não encontrado" }
+{ "erro": "Chamado não encontrado" }
 ```
 
 Erros de validação trazem também a lista de campos inválidos:
 
 ```json
 {
-  "error": "Dados inválidos",
-  "details": [
-    { "field": "email", "message": "Email inválido" },
-    { "field": "password", "message": "A senha deve ter pelo menos 6 caracteres" }
+  "erro": "Dados inválidos",
+  "detalhes": [
+    "email: deve ser um email válido",
+    "password: deve ter pelo menos 6 caracteres"
   ]
 }
 ```
@@ -300,9 +337,9 @@ Erros de validação trazem também a lista de campos inválidos:
 | --- | --- |
 | `200` | Sucesso em consulta, atualização ou exclusão |
 | `201` | Recurso criado (usuário, categoria, chamado) |
-| `400` | Dados inválidos, JSON malformado ou `:id` não numérico |
+| `400` | Dados inválidos, categoria inexistente, JSON malformado ou `:id` não numérico |
 | `401` | Token ausente/inválido/expirado ou credenciais erradas |
-| `404` | Recurso inexistente (chamado, categoria, usuário ou rota) |
+| `404` | Registro inexistente (chamado, categoria, usuário ou rota) |
 | `409` | Email ou nome de categoria já cadastrado |
 | `500` | Erro inesperado (sem detalhes internos na resposta) |
 
@@ -316,7 +353,7 @@ Erros de validação trazem também a lista de campos inválidos:
    Authorization: Bearer TOKEN
    ```
 
-O middleware `authenticate` (`src/middlewares/auth.ts`):
+O middleware `autenticar` (`src/middlewares/autenticar.ts`), com a validação do token feita em `authService.validarToken`:
 
 1. verifica se o header `Authorization` existe;
 2. extrai o token do formato `Bearer TOKEN`;
@@ -343,7 +380,7 @@ Importe o arquivo [`backend/docs/postman_collection.json`](backend/docs/postman_
 | **02 - Categorias** | Listar, criar (rota protegida) e buscar por ID |
 | **03 - Chamados (CRUD)** | Criar, listar, buscar, atualizar, alterar status, excluir e confirmar a exclusão (404) |
 | **04 - Usuários** | Buscar dados públicos do usuário (sem senha) |
-| **05 - Erros e segurança** | 401 sem token e com token inválido, 400 de validação, 409 de email duplicado, 404 de recurso inexistente |
+| **05 - Erros e segurança** | 401 sem token e com token inválido, 400 de validação e de categoria inexistente, 409 de email duplicado, 404 de chamado inexistente |
 
 - As rotas protegidas usam o **Bearer Token** configurado na coleção, com a variável `{{token}}` preenchida pelo login.
 - Os ids da categoria e do chamado criados também são salvos em variáveis (`{{categoryId}}`, `{{ticketId}}`).
