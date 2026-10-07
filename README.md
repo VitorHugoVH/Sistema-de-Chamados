@@ -1,9 +1,8 @@
 # Sistema de Gestão de Chamados
 
-API REST para gerenciamento de chamados de suporte, desenvolvida como **Projeto de Avaliação Full-Stack** da disciplina de Desenvolvimento de Sistemas Web.
+API REST para gerenciamento de chamados de suporte, desenvolvida para a **Etapa 1 — Back-end** do Projeto de Avaliação da disciplina de Desenvolvimento de Sistemas Web.
 
-- **Etapa 1 — Back-end** (este conteúdo): API em Node.js + Express, pasta [`backend/`](backend).
-- **Etapa 2 — Front-end**: Next.js, a ser desenvolvido na pasta `frontend/`.
+O código da API fica na pasta [`backend/`](backend).
 
 Usuários se cadastram, fazem login (JWT) e abrem chamados classificados por categoria, com status e prioridade.
 
@@ -18,7 +17,7 @@ Usuários se cadastram, fazem login (JWT) e abrem chamados classificados por cat
 | Zod | Validação dos dados de entrada |
 | bcrypt | Hash de senhas |
 | jsonwebtoken (JWT) | Autenticação |
-| cors | Liberação de acesso para o front-end |
+| cors | Controle de quais origens podem chamar a API |
 | dotenv | Variáveis de ambiente |
 | Vitest + Supertest | Testes automatizados |
 
@@ -99,6 +98,16 @@ User 1 ──── N Ticket N ──── 1 Category
 - Não é permitido cadastrar **email duplicado** nem **categoria com nome duplicado** (`409`).
 - Não é permitido atualizar ou excluir chamado inexistente (`404`).
 - A senha é armazenada apenas como hash (bcrypt) e o `passwordHash` **nunca** é retornado pela API.
+
+## Decisões de design
+
+- **Dono do chamado vem do token, não do corpo.** O `userId` é lido do JWT pelo middleware de autenticação. Assim, um usuário não consegue abrir chamados em nome de outro, mesmo enviando um `userId` na requisição.
+- **Cada usuário só acessa os próprios chamados.** As consultas filtram por `id` **e** `userId`. Um chamado de outro usuário responde `404`, sem revelar que ele existe.
+- **Erros centralizados com `AppError`.** Os services lançam erros com o status HTTP (`NotFoundError`, `ConflictError`...) e um único middleware monta a resposta. Os controllers ficam curtos e não precisam de `try/catch`.
+- **Validação antes da regra de negócio.** O middleware `validateBody` aplica o schema do Zod antes do controller. O service já recebe dados válidos, e campos que não estão no schema (como `userId`) são descartados.
+- **Enums do Prisma reaproveitados no Zod.** `status` e `priority` são validados com os mesmos enums do banco (`z.nativeEnum`), então a validação e o banco nunca divergem.
+- **IDs numéricos.** IDs autoincrementais (`/tickets/1`) são mais fáceis de usar na demonstração do que UUIDs.
+- **RLS no Supabase.** Ativar o Row Level Security bloqueia o acesso às tabelas pela API pública do Supabase. Os dados só podem ser acessados pela nossa API.
 
 ## Como instalar
 
@@ -345,8 +354,8 @@ O salvamento automático das variáveis funciona no Postman. No Insomnia ou no T
 
 ## CORS
 
-As origens permitidas são definidas pela variável `CORS_ORIGIN`, com várias separadas por vírgula. O padrão é `http://localhost:3000`, onde roda o front-end Next.js em desenvolvimento. Em produção, basta incluir a URL publicada do front-end:
+As origens permitidas são definidas pela variável `CORS_ORIGIN`, com várias separadas por vírgula. O padrão é `http://localhost:3000`. Para liberar outras aplicações, basta incluir as URLs na variável:
 
 ```
-CORS_ORIGIN="http://localhost:3000,https://meu-front.vercel.app"
+CORS_ORIGIN="http://localhost:3000,https://minha-aplicacao.com"
 ```
