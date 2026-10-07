@@ -334,23 +334,21 @@ curl http://localhost:3333/tickets -H "Authorization: Bearer $TOKEN"
 
 ## Demonstração (Postman / Insomnia)
 
-Importe o arquivo [`backend/docs/postman_collection.json`](backend/docs/postman_collection.json) no Postman ou no Insomnia. As requisições estão numeradas na ordem do fluxo:
+Importe o arquivo [`backend/docs/postman_collection.json`](backend/docs/postman_collection.json) no Postman (**Import**). A coleção está organizada em pastas, na ordem da apresentação:
 
-1. Registrar usuário
-2. Login: o token é salvo automaticamente na variável `{{token}}`
-3. Listar categorias
-4. Criar categoria: o id é salvo em `{{categoryId}}`
-5. Buscar categoria por ID
-6. Criar chamado: o id é salvo em `{{ticketId}}`
-7. Listar chamados
-8. Buscar chamado por ID
-9. Atualizar chamado
-10. Alterar status
-11. Buscar usuário por ID
-12. Excluir chamado
-13. Rota protegida sem JWT → `401`
+| Pasta | O que demonstra |
+| --- | --- |
+| **00 - API no ar** | `GET /health` |
+| **01 - Autenticação** | Cadastro (bcrypt) e login (JWT). O token é salvo automaticamente |
+| **02 - Categorias** | Listar, criar (rota protegida) e buscar por ID |
+| **03 - Chamados (CRUD)** | Criar, listar, buscar, atualizar, alterar status, excluir e confirmar a exclusão (404) |
+| **04 - Usuários** | Buscar dados públicos do usuário (sem senha) |
+| **05 - Erros e segurança** | 401 sem token e com token inválido, 400 de validação, 409 de email duplicado, 404 de recurso inexistente |
 
-O salvamento automático das variáveis funciona no Postman. No Insomnia ou no Thunder Client, copie o token manualmente para a variável `token`.
+- As rotas protegidas usam o **Bearer Token** configurado na coleção, com a variável `{{token}}` preenchida pelo login.
+- Os ids da categoria e do chamado criados também são salvos em variáveis (`{{categoryId}}`, `{{ticketId}}`).
+- O email do usuário e o nome da categoria são gerados a cada execução, então a demonstração pode ser repetida sem erro de duplicidade.
+- Cada requisição tem testes automáticos que conferem o status esperado. Para rodar tudo de uma vez: clique na coleção → **Run**.
 
 ## CORS
 
