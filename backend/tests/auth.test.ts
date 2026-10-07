@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import request from "supertest";
 import bcrypt from "bcrypt";
 import { app } from "../src/app";
-import { verifyToken } from "../src/lib/jwt";
+import { verifyToken } from "../src/utils/jwt";
 import { prismaMock } from "./prismaMock";
 
 const publicUser = {

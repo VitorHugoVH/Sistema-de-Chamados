@@ -1,4 +1,4 @@
-import { prisma } from "../lib/prisma";
+import { prisma } from "../config/db";
 import { ConflictError, NotFoundError } from "../utils/AppError";
 import { CreateCategoryInput } from "../validators/category.validator";
 

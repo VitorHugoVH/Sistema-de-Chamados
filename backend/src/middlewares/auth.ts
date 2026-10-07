@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { verifyToken } from "../lib/jwt";
+import { verifyToken } from "../utils/jwt";
 import { findUserById } from "../services/user.service";
 import { UnauthorizedError } from "../utils/AppError";
 

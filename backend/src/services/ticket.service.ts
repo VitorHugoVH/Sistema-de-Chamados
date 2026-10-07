@@ -1,4 +1,4 @@
-import { prisma } from "../lib/prisma";
+import { prisma } from "../config/db";
 import { NotFoundError } from "../utils/AppError";
 import { CreateTicketInput, UpdateTicketInput } from "../validators/ticket.validator";
 

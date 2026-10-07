@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { env } from "./env";
+import { env } from "../config/env";
 
 interface TokenPayload {
   sub: string; // id do usuário

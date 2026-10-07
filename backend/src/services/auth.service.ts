@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
-import { prisma } from "../lib/prisma";
-import { generateToken } from "../lib/jwt";
+import { prisma } from "../config/db";
+import { generateToken } from "../utils/jwt";
 import { ConflictError, UnauthorizedError } from "../utils/AppError";
 import { LoginInput, RegisterInput } from "../validators/auth.validator";
 import { publicUserSelect } from "./user.service";
