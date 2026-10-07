@@ -1,7 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "../config/db";
 
-// Dados relacionados retornados junto com cada chamado
 const incluirRelacionamentos = {
   user: { select: { id: true, name: true, email: true } },
   category: { select: { id: true, name: true } },
@@ -15,7 +14,6 @@ export function buscarTodosDoUsuario(userId: number) {
   });
 }
 
-// Filtra por id E userId: o usuário só encontra os próprios chamados
 export function buscarPorIdDoUsuario(id: number, userId: number) {
   return prisma.ticket.findFirst({
     where: { id, userId },

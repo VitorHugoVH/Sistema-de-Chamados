@@ -7,7 +7,6 @@ import { atualizarTicketSchema, criarTicketSchema } from "../schemas/ticket.sche
 
 const router = Router();
 
-// Todas as rotas de chamados exigem JWT
 router.use(autenticar);
 
 router.get("/", ticketsController.listar);

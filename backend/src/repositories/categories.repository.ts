@@ -4,7 +4,6 @@ export function buscarTodas() {
   return prisma.category.findMany({ orderBy: { name: "asc" } });
 }
 
-// Inclui a quantidade de chamados da categoria
 export function buscarPorId(id: number) {
   return prisma.category.findUnique({
     where: { id },

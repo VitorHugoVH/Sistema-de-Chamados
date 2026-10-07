@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import { env } from "../config/env";
 
 interface TokenPayload {
-  sub: string; // id do usuário
+  sub: string;
 }
 
 export function gerarToken(userId: number): string {
@@ -11,7 +11,6 @@ export function gerarToken(userId: number): string {
   });
 }
 
-// Lança erro se o token for inválido, adulterado ou expirado
 export function verificarToken(token: string): TokenPayload {
   return jwt.verify(token, env.JWT_SECRET) as TokenPayload;
 }

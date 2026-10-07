@@ -4,7 +4,6 @@ import categoriesRoutes from "./categories.routes";
 import ticketsRoutes from "./tickets.routes";
 import usersRoutes from "./users.routes";
 
-// Agrega os roteadores de cada recurso
 const router = Router();
 
 router.get("/health", (_req, res) => {

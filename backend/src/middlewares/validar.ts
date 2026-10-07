@@ -3,9 +3,7 @@ import { ZodType } from "zod";
 import { formatarErrosZod } from "../schemas/common";
 import { ErroValidacao } from "../utils/erros";
 
-// Valida body, params e query com um schema do Zod ANTES do controller.
-// Se for inválido, lança ErroValidacao (400) com a lista de problemas.
-// Se for válido, os dados já convertidos ficam em req.validated.
+// valida body, params e query antes do controller
 export function validar(schema: ZodType) {
   return (req: Request, _res: Response, next: NextFunction) => {
     const resultado = schema.safeParse({

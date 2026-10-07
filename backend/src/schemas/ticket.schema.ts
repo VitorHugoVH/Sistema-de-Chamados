@@ -18,7 +18,6 @@ const categoryId = z
   .int({ error: "é obrigatório e deve ser um número inteiro" })
   .positive({ error: "deve ser um número inteiro positivo" });
 
-// Os enums vêm do próprio Prisma: o banco e a validação aceitam os mesmos valores
 const status = z.enum(TicketStatus, {
   error: `deve ser um dos valores: ${Object.values(TicketStatus).join(", ")}`,
 });
@@ -27,8 +26,7 @@ const priority = z.enum(TicketPriority, {
   error: `deve ser um dos valores: ${Object.values(TicketPriority).join(", ")}`,
 });
 
-// Criação: todo chamado nasce com status OPEN.
-// Não existe campo userId: o dono do chamado vem do JWT (campos extras são descartados).
+// sem userId: vem do token
 export const criarTicketSchema = z.object({
   body: z.object({
     title,
@@ -38,7 +36,6 @@ export const criarTicketSchema = z.object({
   }),
 });
 
-// Atualização: todos os campos são opcionais, mas pelo menos um deve ser enviado
 export const atualizarTicketSchema = z.object({
   params: idParamsSchema.shape.params,
   body: z

@@ -13,7 +13,6 @@ export async function buscarPorId(id: number) {
 }
 
 export async function criar(dados: CriarCategoriaInput) {
-  // Regra: não permitir duas categorias com o mesmo nome
   const existente = await categoriesRepository.buscarPorNome(dados.name);
   if (existente) throw new ErroConflito("Já existe uma categoria com esse nome");
 

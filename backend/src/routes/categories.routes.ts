@@ -7,7 +7,6 @@ import { idParamsSchema } from "../schemas/common";
 
 const router = Router();
 
-// Leitura pública; criação exige autenticação
 router.get("/", categoriesController.listar);
 router.get("/:id", validar(idParamsSchema), categoriesController.buscarPorId);
 router.post("/", autenticar, validar(criarCategoriaSchema), categoriesController.criar);

@@ -1,4 +1,3 @@
-// Versão "falsa" do Prisma Client: cada método é uma função mockada
 export function criarPrismaMock() {
   return {
     user: {

@@ -1,6 +1,6 @@
 import { prisma } from "../config/db";
 
-// Campos públicos do usuário: passwordHash NUNCA é selecionado
+// sem passwordHash
 const camposPublicos = {
   id: true,
   name: true,
@@ -13,7 +13,7 @@ export function buscarPorId(id: number) {
   return prisma.user.findUnique({ where: { id }, select: camposPublicos });
 }
 
-// Retorna também o passwordHash: usado apenas no login, para comparar a senha
+// usado no login (traz o hash)
 export function buscarPorEmail(email: string) {
   return prisma.user.findUnique({ where: { email } });
 }

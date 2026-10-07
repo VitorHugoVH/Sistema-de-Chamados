@@ -2,7 +2,6 @@ import { prisma } from "../../src/config/db";
 import * as ticketsRepository from "../../src/repositories/tickets.repository";
 import * as usersRepository from "../../src/repositories/users.repository";
 
-// prisma aqui é o mock criado em tests/jest.setup.ts
 const prismaMock = jest.mocked(prisma);
 
 describe("users.repository", () => {

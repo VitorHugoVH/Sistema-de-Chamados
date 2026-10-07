@@ -18,7 +18,6 @@ const auth = { Authorization: `Bearer ${gerarToken(usuario.id)}` };
 const ticketValido = { title: "Impressora não liga", description: "A impressora do 2º andar não liga", categoryId: 1 };
 
 beforeEach(() => {
-  // O middleware autenticar busca o usuário dono do token
   usuarios.buscarPorId.mockResolvedValue(usuario);
 });
 

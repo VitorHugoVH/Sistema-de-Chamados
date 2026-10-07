@@ -1,6 +1,5 @@
 import { Response } from "express";
 
-// Cria um "res" falso para testar middlewares sem subir o servidor
 export function criarRes() {
   const res = {
     statusCode: 0,

@@ -2,8 +2,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// Categorias iniciais para facilitar a demonstração.
-// O seed não cria usuários: eles são cadastrados via POST /auth/register.
+// categorias iniciais
 const categories = [
   { name: "Hardware", description: "Problemas com computadores, impressoras e periféricos" },
   { name: "Software", description: "Instalação, erros e atualização de programas" },

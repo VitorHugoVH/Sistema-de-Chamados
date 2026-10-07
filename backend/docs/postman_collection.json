@@ -2,7 +2,7 @@
   "info": {
     "name": "Sistema de Gestão de Chamados - Etapa 1 (Back-end)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Demonstração da API REST do Sistema de Gestão de Chamados.\n\n**Antes de começar:** rode a API com `npm run dev` (pasta backend). A variável `baseUrl` aponta para `http://localhost:3333`.\n\n**Como usar:** execute as pastas na ordem (00 → 05). O login salva o token JWT automaticamente na variável `token`, e as rotas protegidas usam esse token pela autenticação da coleção (Bearer Token). A criação de categoria e de chamado também salva os ids.\n\nO email do usuário e o nome da categoria são gerados a cada execução, então é possível repetir a demonstração sem conflito."
+    "description": "Rodar a API com npm run dev antes. Executar as pastas em ordem."
   },
   "auth": {
     "type": "bearer",
@@ -51,7 +51,7 @@
   "item": [
     {
       "name": "00 - API no ar",
-      "description": "Confirma que o servidor está rodando.",
+      "description": "",
       "item": [
         {
           "name": "Health check",
@@ -70,7 +70,6 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/health",
-            "description": "Rota pública que confirma que a API está no ar.",
             "auth": {
               "type": "noauth"
             }
@@ -80,7 +79,7 @@
     },
     {
       "name": "01 - Autenticação",
-      "description": "Cadastro com hash de senha (bcrypt) e login com emissão de JWT.",
+      "description": "",
       "item": [
         {
           "name": "Registrar usuário",
@@ -90,7 +89,6 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "// Gera um email novo a cada execução para evitar o erro 409 (email duplicado)",
                   "pm.collectionVariables.set('email', `usuario${Date.now()}@exemplo.com`);"
                 ]
               }
@@ -115,7 +113,6 @@
               }
             ],
             "url": "{{baseUrl}}/auth/register",
-            "description": "Cria um usuário. A senha é salva como hash (bcrypt) e nunca é retornada.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Vitor Hugo\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
@@ -156,7 +153,6 @@
               }
             ],
             "url": "{{baseUrl}}/auth/login",
-            "description": "Valida email e senha (bcrypt.compare) e retorna o JWT. O token fica salvo na variável `token` e é usado nas rotas protegidas.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
@@ -175,7 +171,7 @@
     },
     {
       "name": "02 - Categorias",
-      "description": "Entidade relacionada: um chamado pertence a uma categoria.",
+      "description": "",
       "item": [
         {
           "name": "Listar categorias",
@@ -194,7 +190,6 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/categories",
-            "description": "Rota pública. Lista as categorias cadastradas.",
             "auth": {
               "type": "noauth"
             }
@@ -208,7 +203,6 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "// Nome único a cada execução para evitar o erro 409 (categoria duplicada)",
                   "pm.collectionVariables.set('categoryName', `Impressoras ${Date.now() % 100000}`);"
                 ]
               }
@@ -233,7 +227,6 @@
               }
             ],
             "url": "{{baseUrl}}/categories",
-            "description": "Exige JWT. O id criado fica salvo na variável `categoryId`.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"{{categoryName}}\",\n  \"description\": \"Problemas com impressão\"\n}",
@@ -262,7 +255,6 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/categories/{{categoryId}}",
-            "description": "Mostra a categoria e quantos chamados ela possui (`_count.tickets`).",
             "auth": {
               "type": "noauth"
             }
@@ -272,7 +264,7 @@
     },
     {
       "name": "03 - Chamados (CRUD)",
-      "description": "Entidade principal. Todas as rotas exigem JWT.",
+      "description": "",
       "item": [
         {
           "name": "Criar chamado",
@@ -300,7 +292,6 @@
               }
             ],
             "url": "{{baseUrl}}/tickets",
-            "description": "O `userId: 999` enviado no corpo é ignorado: o dono do chamado é sempre o usuário do token.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"title\": \"Impressora não liga\",\n  \"description\": \"A impressora do 2º andar não liga desde ontem\",\n  \"priority\": \"HIGH\",\n  \"categoryId\": {{categoryId}},\n  \"userId\": 999\n}",
@@ -328,8 +319,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/tickets",
-            "description": "Lista apenas os chamados do usuário autenticado, com usuário e categoria."
+            "url": "{{baseUrl}}/tickets"
           }
         },
         {
@@ -348,8 +338,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/tickets/{{ticketId}}",
-            "description": "Busca um chamado do usuário autenticado."
+            "url": "{{baseUrl}}/tickets/{{ticketId}}"
           }
         },
         {
@@ -374,7 +363,6 @@
               }
             ],
             "url": "{{baseUrl}}/tickets/{{ticketId}}",
-            "description": "Atualiza os campos enviados (validados com Zod).",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"title\": \"Impressora do 2º andar não liga\",\n  \"priority\": \"MEDIUM\"\n}",
@@ -409,7 +397,6 @@
               }
             ],
             "url": "{{baseUrl}}/tickets/{{ticketId}}",
-            "description": "Status aceitos: OPEN, IN_PROGRESS, RESOLVED, CLOSED.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}",
@@ -471,8 +458,7 @@
           "request": {
             "method": "DELETE",
             "header": [],
-            "url": "{{baseUrl}}/tickets/{{ticketId}}",
-            "description": "Exclui o chamado."
+            "url": "{{baseUrl}}/tickets/{{ticketId}}"
           }
         },
         {
@@ -491,15 +477,14 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/tickets/{{ticketId}}",
-            "description": "Confirma que o chamado foi excluído."
+            "url": "{{baseUrl}}/tickets/{{ticketId}}"
           }
         }
       ]
     },
     {
       "name": "04 - Usuários",
-      "description": "Leitura de entidade relacionada.",
+      "description": "",
       "item": [
         {
           "name": "Buscar usuário por ID",
@@ -518,15 +503,14 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/users/{{userId}}",
-            "description": "Retorna apenas os dados públicos do usuário (sem passwordHash)."
+            "url": "{{baseUrl}}/users/{{userId}}"
           }
         }
       ]
     },
     {
       "name": "05 - Erros e segurança",
-      "description": "Validação (400), autenticação (401), recurso inexistente (404) e conflito (409), todos tratados pelo middleware central de erros.",
+      "description": "",
       "item": [
         {
           "name": "Rota protegida sem token (401)",
@@ -545,7 +529,6 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/tickets",
-            "description": "Sem o header Authorization a API responde 401.",
             "auth": {
               "type": "noauth"
             }
@@ -573,7 +556,6 @@
               }
             ],
             "url": "{{baseUrl}}/tickets",
-            "description": "Token adulterado ou expirado responde 401.",
             "auth": {
               "type": "noauth"
             }
@@ -602,7 +584,6 @@
               }
             ],
             "url": "{{baseUrl}}/auth/register",
-            "description": "O Zod valida antes da regra de negócio e informa cada campo inválido.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"V\",\n  \"email\": \"email-invalido\",\n  \"password\": \"123\"\n}",
@@ -639,7 +620,6 @@
               }
             ],
             "url": "{{baseUrl}}/auth/register",
-            "description": "Regra de negócio: não permite email duplicado.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Vitor Hugo\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
@@ -712,7 +692,6 @@
               }
             ],
             "url": "{{baseUrl}}/tickets",
-            "description": "priority aceita apenas LOW, MEDIUM ou HIGH.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"title\": \"Teste\",\n  \"description\": \"Teste de validação\",\n  \"priority\": \"URGENTE\",\n  \"categoryId\": {{categoryId}}\n}",
@@ -746,7 +725,6 @@
               }
             ],
             "url": "{{baseUrl}}/tickets",
-            "description": "Regra de negócio: o chamado precisa pertencer a uma categoria existente.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"title\": \"Teste\",\n  \"description\": \"Categoria que não existe\",\n  \"categoryId\": 999999\n}",

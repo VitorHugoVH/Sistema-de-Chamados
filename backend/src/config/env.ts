@@ -1,8 +1,7 @@
 import "dotenv/config";
 import { z } from "zod";
 
-// Valida as variáveis de ambiente na inicialização.
-// Se alguma obrigatória estiver faltando, a aplicação nem sobe.
+// valida o .env ao iniciar
 const envSchema = z.object({
   DATABASE_URL: z.string().min(1, "DATABASE_URL é obrigatória"),
   JWT_SECRET: z.string().min(1, "JWT_SECRET é obrigatória"),

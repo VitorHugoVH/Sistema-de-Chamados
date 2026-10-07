@@ -1,8 +1,6 @@
 import { Request, Response } from "express";
 import * as ticketsService from "../services/tickets.service";
 
-// req.user é garantido pelo middleware autenticar, aplicado em todas as rotas de tickets
-
 export async function listar(req: Request, res: Response) {
   const tickets = await ticketsService.listar(req.user!.id);
   res.status(200).json(tickets);
