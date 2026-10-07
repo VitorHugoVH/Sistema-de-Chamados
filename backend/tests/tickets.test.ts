@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import request from "supertest";
 import { app } from "../src/app";
-import { generateToken } from "../src/utils/jwt";
+import { gerarToken } from "../src/utils/jwt";
 import { prismaMock } from "./prismaMock";
 
 const user = { id: 1, name: "Maria", email: "maria@teste.com", createdAt: new Date(), updatedAt: new Date() };
-const token = generateToken(user.id);
+const token = gerarToken(user.id);
 const auth = { Authorization: `Bearer ${token}` };
 
 const validTicket = {

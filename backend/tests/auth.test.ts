@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import request from "supertest";
 import bcrypt from "bcrypt";
 import { app } from "../src/app";
-import { verifyToken } from "../src/utils/jwt";
+import { verificarToken } from "../src/utils/jwt";
 import { prismaMock } from "./prismaMock";
 
 const publicUser = {
@@ -64,7 +64,7 @@ describe("POST /auth/login", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.user).toEqual({ id: 1, name: "Maria", email: "maria@teste.com" });
-    expect(verifyToken(response.body.token).sub).toBe("1");
+    expect(verificarToken(response.body.token).sub).toBe("1");
   });
 
   it("retorna 401 quando a senha está errada", async () => {

@@ -5,13 +5,13 @@ interface TokenPayload {
   sub: string; // id do usuário
 }
 
-export function generateToken(userId: number): string {
+export function gerarToken(userId: number): string {
   return jwt.sign({ sub: String(userId) }, env.JWT_SECRET, {
     expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions["expiresIn"],
   });
 }
 
 // Lança erro se o token for inválido, adulterado ou expirado
-export function verifyToken(token: string): TokenPayload {
+export function verificarToken(token: string): TokenPayload {
   return jwt.verify(token, env.JWT_SECRET) as TokenPayload;
 }

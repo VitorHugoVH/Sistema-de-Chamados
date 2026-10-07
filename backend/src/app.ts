@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { env } from "./config/env";
-import { routes } from "./routes";
+import routes from "./routes";
 import { notFound } from "./middlewares/notFound";
 import { errorHandler } from "./middlewares/errorHandler";
 

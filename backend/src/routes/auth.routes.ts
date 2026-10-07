@@ -3,7 +3,9 @@ import * as authController from "../controllers/auth.controller";
 import { validar } from "../middlewares/validar";
 import { loginSchema, registrarSchema } from "../schemas/auth.schema";
 
-export const authRoutes = Router();
+const router = Router();
 
-authRoutes.post("/register", validar(registrarSchema), authController.register);
-authRoutes.post("/login", validar(loginSchema), authController.login);
+router.post("/register", validar(registrarSchema), authController.registrar);
+router.post("/login", validar(loginSchema), authController.login);
+
+export default router;
