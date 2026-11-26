@@ -106,7 +106,8 @@ Coleção do Postman: `backend/docs/postman_collection.json`
 ### API no Render
 
 1. New > Web Service, conecte o repositório, Root Directory: `backend`.
-2. Build Command: `npm install && npx prisma generate && npm run build`
+2. Build Command: `npm install --include=dev && npx prisma generate && npm run build`
+   (o `--include=dev` é necessário porque, com `NODE_ENV=production`, o npm pula as devDependencies: TypeScript, tipos e Prisma CLI)
 3. Start Command: `npx prisma migrate deploy && npm start`
 4. Variáveis: `DATABASE_URL`, `DIRECT_URL`, `JWT_SECRET`, `JWT_EXPIRES_IN=1d`, `NODE_ENV=production`, `CORS_ORIGIN` (URL da Vercel).
 
