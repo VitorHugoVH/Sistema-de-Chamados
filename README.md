@@ -9,8 +9,10 @@ Sistema full-stack para abrir, acompanhar e resolver chamados de suporte.
 
 ## Deploy
 
-- Front-end: _adicionar URL da Vercel_
-- API: _adicionar URL do Render_
+- Front-end (Vercel): https://sistema-de-chamados-chi.vercel.app
+- API (Render): https://sistema-de-chamados-4s7o.onrender.com (ex.: [`/health`](https://sistema-de-chamados-4s7o.onrender.com/health), [`/categories`](https://sistema-de-chamados-4s7o.onrender.com/categories))
+
+A API está no plano gratuito do Render e "dorme" após 15 minutos sem uso: a primeira requisição pode levar cerca de 50 segundos.
 
 ## Arquitetura
 
